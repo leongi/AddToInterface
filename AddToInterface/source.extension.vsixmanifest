@@ -4,7 +4,7 @@
     <Identity Id="AddToInterface" Version="0.9" Language="en-US" Publisher="leogit" />
     <DisplayName>Add to interface</DisplayName>
     <Description xml:space="preserve">"Add to interface" extension allow to simplify SOLID development by reducing the places for adding new functions.
-It works similar to "Extract Intefrace" command from class refactoring menu, but can be applied on single method.</Description>
+It works similar to "Extract Interface" command from class refactoring menu, but can be applied on single method.</Description>
     <License>License.txt</License>
   </Metadata>
   <Installation>
