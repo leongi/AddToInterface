@@ -16,19 +16,19 @@ namespace TestLightBulb
     internal class AddToInterfaceAction : ISuggestedAction
     {
         private readonly CodeInterface _interface;
-        private readonly CodeFunction _function;
+        private readonly CodeFunction _srcFunction;
 
         public AddToInterfaceAction(CodeInterface codeInterface, CodeFunction codeFunction)
         {
             _interface = codeInterface;
-            _function = codeFunction;
+            _srcFunction = codeFunction;
         }
 
         public string DisplayText
         {
             get
             {
-                return string.Format("Add '{0}' to {1} interface", _function.Name, _interface.Name);
+                return $"Add '{_srcFunction.Name}' to {_interface.Name} interface";
             }
         }
 
@@ -79,9 +79,6 @@ namespace TestLightBulb
 
         public Task<object> GetPreviewAsync(CancellationToken cancellationToken)
         {
-            var textBlock = new TextBlock();
-            textBlock.Padding = new Thickness(5);
-            textBlock.Inlines.Add(new Run() { Text = string.Empty });
             return Task.FromResult<object>(null);
         }
 
@@ -96,14 +93,18 @@ namespace TestLightBulb
                 return;
             }
 
-            CodeFunction func = _interface.AddFunction(_function.Name, vsCMFunction.vsCMFunctionFunction, _function.Type, -1);
-
-            IEnumerable<CodeParameter> parameters = _function.Parameters.Cast<CodeParameter>().Reverse();
-
-            foreach (var parameter in parameters)
+            try
             {
-                func.AddParameter(parameter.Name, parameter.Type);
+                CodeFunction addedFunction = _interface.AddFunction(_srcFunction.Name, vsCMFunction.vsCMFunctionFunction, _srcFunction.Type, -1);
+
+                var parameters = _srcFunction.Parameters.Cast<CodeParameter>().Reverse().ToList();
+
+                foreach (var parameter in parameters)
+                {
+                    addedFunction.AddParameter(parameter.Name, parameter.Type);
+                }
             }
+            catch { }
         }
 
         public bool TryGetTelemetryId(out Guid telemetryId)
