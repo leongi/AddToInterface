@@ -62,9 +62,6 @@ namespace AddToInterface
                                     var interfaces = GetAllImplementedInterfaces(codeClass);
                                     bool foundInAny = interfaces.Any(i => IsFoundInInterface(srcFunction, i));
 
-                                    var bases1 = interfaces[0].Bases.Cast<CodeInterface>().ToList();
-                                    string name = bases1[0].Name;
-
                                     // Suggestions addition
                                     if (interfaces.Count > 0 && !foundInAny)
                                     {
@@ -80,6 +77,10 @@ namespace AddToInterface
                                 }
                             }
                         }
+                    }
+                    catch
+                    {
+
                     }
                     finally
                     {
@@ -136,11 +137,14 @@ namespace AddToInterface
 
         private bool IsFoundInInterface(CodeFunction function, CodeInterface codeInterface)
         {
-            foreach (CodeFunction destFunc in codeInterface.Children)
+            foreach (CodeElement destFunc in codeInterface.Children)
             {
-                if (function.Name == destFunc.Name && ContainSameParameters(function, destFunc))
+                if (destFunc.Kind == vsCMElement.vsCMElementFunction)
                 {
-                    return true;
+                    if (function.Name == destFunc.Name && ContainSameParameters(function, (CodeFunction)destFunc))
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -194,9 +198,12 @@ namespace AddToInterface
         {
             var list = new List<CodeInterface>();
 
-            foreach (CodeInterface item in codeClass.ImplementedInterfaces)
+            foreach (CodeElement item in codeClass.ImplementedInterfaces)
             {
-                FillAllBaseInterfaces(list, item);
+                if (item.Kind == vsCMElement.vsCMElementInterface)
+                {
+                    FillAllBaseInterfaces(list, (CodeInterface)item);
+                }
             }
 
             return list;
@@ -204,11 +211,30 @@ namespace AddToInterface
 
         private void FillAllBaseInterfaces(List<CodeInterface> list, CodeInterface codeInterface)
         {
-            list.Add(codeInterface);
-
-            foreach (CodeInterface item in codeInterface.Bases)
+            if (IsPartOfTheSolution((CodeElement)codeInterface))
             {
-                FillAllBaseInterfaces(list, item);
+                list.Add(codeInterface);
+            }
+
+            foreach (CodeElement item in codeInterface.Bases)
+            {
+                if (item.Kind == vsCMElement.vsCMElementInterface)
+                {
+                    FillAllBaseInterfaces(list, (CodeInterface)item);
+                }
+            }
+        }
+
+        private bool IsPartOfTheSolution(CodeElement codeElement)
+        {
+            try
+            {
+                var projectItem = codeElement.ProjectItem;
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
     }
