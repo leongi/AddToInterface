@@ -44,10 +44,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AddToInterfaceActionsSourceProvider.cs" />
-    <Compile Include="AddToInterfaceAction.cs" />
+    <Compile Include="AtiActionsSourceProvider.cs" />
+    <Compile Include="AtiAction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SuggestedActionsSource.cs" />
+    <Compile Include="AtiActionsSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -56,6 +56,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="image.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="License.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>

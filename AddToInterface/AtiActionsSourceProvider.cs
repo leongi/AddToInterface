@@ -1,21 +1,16 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Language.Intellisense;
+﻿using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
 using System.ComponentModel.Composition;
-using System.Threading;
 
 namespace AddToInterface
 {
     [Export(typeof(ISuggestedActionsSourceProvider))]
-    [Name("Test Suggested Actions")]
+    [Name("Add To Interface Suggested Actions")]
     [ContentType("text")]
-    internal class AddToInterfaceActionsSourceProvider : ISuggestedActionsSourceProvider
+    internal class AtiActionsSourceProvider : ISuggestedActionsSourceProvider
     {
         [Import(typeof(ITextStructureNavigatorSelectorService))]
         internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }
@@ -26,7 +21,7 @@ namespace AddToInterface
             {
                 return null;
             }
-            return new SuggestedActionsSource(this, textView, textBuffer);
+            return new AtiActionsSource(this, textView, textBuffer);
         }
     }
 }

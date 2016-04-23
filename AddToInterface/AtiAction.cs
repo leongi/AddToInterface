@@ -1,24 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
+﻿using EnvDTE;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.Language.Intellisense;
-using Microsoft.VisualStudio.Text;
-using EnvDTE;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace TestLightBulb
+namespace AddToInterface
 {
-    internal class AddToInterfaceAction : ISuggestedAction
+    internal class AtiAction : ISuggestedAction
     {
         private readonly CodeInterface _interface;
         private readonly CodeFunction _srcFunction;
 
-        public AddToInterfaceAction(CodeInterface codeInterface, CodeFunction codeFunction)
+        public AtiAction(CodeInterface codeInterface, CodeFunction codeFunction)
         {
             _interface = codeInterface;
             _srcFunction = codeFunction;
