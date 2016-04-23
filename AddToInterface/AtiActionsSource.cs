@@ -30,82 +30,30 @@ namespace AddToInterface
         {
             return Task.Factory.StartNew(() =>
             {
-                if (Monitor.TryEnter(_suggestedActions))
+                lock (_suggestedActions)
                 {
-                    try
-                    {
-                        TextExtent extent;
-                        if (TryGetWordUnderCaret(out extent) && extent.IsSignificant)
-                        {
-                            var activeDocument = _dte.ActiveDocument;
-                            TextSelection textSelection = (TextSelection)activeDocument.Selection;
-                            TextPoint point = (TextPoint)textSelection.ActivePoint;
-
-                            CodeFunction srcFunction;
-                            if (TryGetFunctionFromPoint(point, out srcFunction))
-                            {
-                                // Function validation
-                                bool isFuncRegular = (srcFunction.FunctionKind == vsCMFunction.vsCMFunctionFunction);
-                                bool isPublicAccess = (srcFunction.Access == vsCMAccess.vsCMAccessPublic);
-                                bool isCursorOnDefinition = (point.Line == srcFunction.StartPoint.Line);
-
-                                if (!isFuncRegular || !isPublicAccess || !isCursorOnDefinition)
-                                {
-                                    return false;
-                                }
-
-                                // Code scan
-                                CodeClass codeClass = srcFunction.Parent as CodeClass;
-                                if (codeClass != null)
-                                {
-                                    // Interfaces scan
-                                    var interfaces = GetAllImplementedInterfaces(codeClass);
-                                    bool foundInAny = interfaces.Any(i => IsFoundInInterface(srcFunction, i));
-
-                                    // Suggestions addition
-                                    if (interfaces.Count > 0 && !foundInAny)
-                                    {
-                                        _suggestedActions.Clear();
-
-                                        foreach (var item in interfaces)
-                                        {
-                                            _suggestedActions.Add(new AtiAction(item, srcFunction));
-                                        }
-
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    catch
-                    {
-
-                    }
-                    finally
-                    {
-                        Monitor.Exit(_suggestedActions);
-                    }
+                    return HasSuggestedActions();
                 }
-                return false;
             });
         }
 
         public IEnumerable<SuggestedActionSet> GetSuggestedActions(ISuggestedActionCategorySet requestedActionCategories, SnapshotSpan range, CancellationToken cancellationToken)
         {
             TextExtent extent;
-            if (TryGetWordUnderCaret(out extent) && extent.IsSignificant && _suggestedActions.Count > 0)
-            {
-                var actionSets = new List<SuggestedActionSet> { new SuggestedActionSet(_suggestedActions) };
+            bool isSignificant = TryGetWordUnderCaret(out extent) && extent.IsSignificant;
 
-                _suggestedActions.Clear();
-
-                return actionSets;
-            }
-            else
+            if (isSignificant)
             {
-                return Enumerable.Empty<SuggestedActionSet>();
+                lock (_suggestedActions)
+                {
+                    if (_suggestedActions.Count > 0)
+                    {
+                        return new List<SuggestedActionSet> { new SuggestedActionSet(_suggestedActions) };
+                    }
+                }
             }
+
+            return Enumerable.Empty<SuggestedActionSet>();
         }
 
         public event EventHandler<EventArgs> SuggestedActionsChanged;
@@ -117,6 +65,59 @@ namespace AddToInterface
         public bool TryGetTelemetryId(out Guid telemetryId)
         {
             telemetryId = Guid.Empty;
+            return false;
+        }
+
+        private bool HasSuggestedActions()
+        {
+            _suggestedActions.Clear();
+
+            try
+            {
+                TextExtent extent;
+                if (TryGetWordUnderCaret(out extent) && extent.IsSignificant)
+                {
+                    var activeDocument = _dte.ActiveDocument;
+                    TextSelection textSelection = (TextSelection)activeDocument.Selection;
+                    TextPoint point = (TextPoint)textSelection.ActivePoint;
+
+                    CodeFunction srcFunction;
+                    if (TryGetFunctionFromPoint(point, out srcFunction))
+                    {
+                        // Function validation
+                        bool isFuncRegular = (srcFunction.FunctionKind == vsCMFunction.vsCMFunctionFunction);
+                        bool isPublicAccess = (srcFunction.Access == vsCMAccess.vsCMAccessPublic);
+                        bool isCursorOnDefinition = (point.Line == srcFunction.StartPoint.Line);
+
+                        if (!isFuncRegular || !isPublicAccess || !isCursorOnDefinition)
+                        {
+                            return false;
+                        }
+
+                        // Code scan
+                        CodeClass codeClass = srcFunction.Parent as CodeClass;
+                        if (codeClass != null)
+                        {
+                            // Interfaces scan
+                            var interfaces = GetAllImplementedInterfaces(codeClass);
+                            bool foundInAny = interfaces.Any(i => IsFoundInInterface(srcFunction, i));
+
+                            // Suggestions addition
+                            if (interfaces.Count > 0 && !foundInAny)
+                            {
+                                foreach (var item in interfaces)
+                                {
+                                    _suggestedActions.Add(new AtiAction(item, srcFunction));
+                                }
+
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+
             return false;
         }
 

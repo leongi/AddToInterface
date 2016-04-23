@@ -8,6 +8,7 @@ It works similar to "Extract Interface" command from class refactoring menu, but
     <License>License.txt</License>
     <Icon>image.png</Icon>
     <PreviewImage>image.png</PreviewImage>
+    <Tags>Code, Refactoring, Interface, Dependency Inversion, SOLID</Tags>
   </Metadata>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[14.0]" />
